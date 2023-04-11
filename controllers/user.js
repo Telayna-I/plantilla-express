@@ -1,35 +1,68 @@
 const { response } = require("express");
 
-const usersGet = (req, res = response) => {
-    const { nombre = "No name", apellido, apikey } = req.query;
+const bcryptjs = require("bcryptjs");
+
+const User = require("../models/user");
+
+const usersGet = async (req, res = response) => {
+    const { limit = 5, from = 0 } = req.query;
+    const query = { status: true };
+
+    const [total, users] = await Promise.all([
+        User.countDocuments(query),
+        User.find(query).skip(parseInt(from)).limit(parseInt(limit)),
+    ]);
 
     res.json({
-        message: "GET API - controlador",
-        nombre,
-        apellido,
-        apikey,
+        total,
+        users,
     });
 };
 
-const usersPost = (req, res) => {
-    const { nombre, edad } = req.body;
+const usersPost = async (req, res) => {
+    const { name, email, password, role } = req.body;
+
+    const user = new User({ name, email, password, role });
+
+    // Encriptar la contraseña
+    const salt = await bcryptjs.genSalt(10);
+    user.password = await bcryptjs.hash(password, salt);
+
+    // Guardar en BD
+    await user.save();
+
     res.json({
         message: "POST API - controlador",
-        nombre,
-        edad,
+        user,
     });
 };
 
-const usersPut = (req, res) => {
+const usersPut = async (req, res) => {
     const id = req.params.id;
+    const { password, google, email, ...rest } = req.body;
+
+    // Encriptar la contraseña
+    const salt = await bcryptjs.genSalt(10);
+    rest.password = await bcryptjs.hash(password, salt);
+
+    // Actializar BD
+    const user = await User.findByIdAndUpdate(id, rest);
+
     res.json({
         message: "PUT API - controlador",
+        user,
     });
 };
 
-const usersDelete = (req, res) => {
+const usersDelete = async (req, res) => {
+    const { id } = req.params;
+
+    //Borrar Fisicamente
+    // const user = await User.findByIdAndDelete(id);
+    const user = await User.findByIdAndUpdate(id, { status: "false" });
+
     res.json({
-        message: "DELETE API - controlador",
+        user,
     });
 };
 const usersPatch = (req, res) => {
