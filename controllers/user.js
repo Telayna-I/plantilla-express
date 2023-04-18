@@ -54,17 +54,16 @@ const usersPut = async (req, res) => {
     });
 };
 
-const usersDelete = async (req, res) => {
+const usersDelete = async (req, res = response) => {
     const { id } = req.params;
 
-    //Borrar Fisicamente
-    // const user = await User.findByIdAndDelete(id);
     const user = await User.findByIdAndUpdate(id, { status: "false" });
+    const authenticatedUser = req.user;
 
-    res.json({
-        user,
-    });
+    // await res.json({ user, authenticatedUser });
+    res.json({ user, authenticatedUser });
 };
+
 const usersPatch = (req, res) => {
     res.json({
         message: "PATCH API - controlador",
