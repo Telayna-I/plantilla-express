@@ -42,6 +42,16 @@ const hasId = (id = "") => {
     }
 };
 
+const allowedCollections = (collection = "", collections = []) => {
+    const includes = collections.includes(collection);
+    if (!includes) {
+        throw new Error(`La coleccion ${collection} no es permitida.
+        colleciones permitidas: ${collections}`);
+    }
+
+    return true;
+};
+
 module.exports = {
     isValidRole,
     isValidEmail,
@@ -49,4 +59,5 @@ module.exports = {
     existCategorieById,
     existProductById,
     hasId,
+    allowedCollections,
 };
